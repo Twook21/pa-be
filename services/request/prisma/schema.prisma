@@ -1,0 +1,57 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../node_modules/.prisma/request-client"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["request_schema"]
+}
+
+enum RequestStatus {
+  pending
+  approved
+  rejected
+
+  @@schema("request_schema")
+}
+
+model LeaveRequest {
+  id           Int           @id @default(autoincrement())
+  userId       Int           @map("user_id")
+  type         String        @db.VarChar(255)
+  reason       String        @db.Text
+  startDate    DateTime      @map("start_date") @db.Date
+  endDate      DateTime      @map("end_date") @db.Date
+  status       RequestStatus @default(pending)
+  photo        String?       @db.VarChar(255)
+  note         String?       @db.Text
+  responseDate DateTime?     @map("response_date")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@map("leave_requests")
+  @@schema("request_schema")
+}
+
+model ExternalDuty {
+  id          Int           @id @default(autoincrement())
+  userId      Int           @map("user_id")
+  date        DateTime      @db.Date
+  location    String        @db.VarChar(255)
+  description String        @db.Text
+  document    String?       @db.VarChar(255)
+  status      RequestStatus @default(pending)
+  approvedBy  Int?          @map("approved_by")
+  adminNotes  String?       @map("admin_notes") @db.Text
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId, date])
+  @@map("external_duties")
+  @@schema("request_schema")
+}

@@ -1,0 +1,51 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../node_modules/.prisma/auth-client"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["auth_schema"]
+}
+
+enum UserRole {
+  admin
+  user
+
+  @@schema("auth_schema")
+}
+
+enum UserStatus {
+  active
+  inactive
+  resigned
+
+  @@schema("auth_schema")
+}
+
+model User {
+  id              Int        @id @default(autoincrement())
+  name            String     @db.VarChar(255)
+  email           String     @unique @db.VarChar(255)
+  emailVerifiedAt DateTime?  @map("email_verified_at")
+  password        String     @db.VarChar(255)
+  photo           String?    @db.VarChar(255)
+  role            UserRole   @default(user)
+  division        String?    @db.VarChar(255)
+  phoneNumber     String?    @map("phone_number") @db.VarChar(15)
+  bio             String?    @db.Text
+  status          UserStatus @default(active)
+  resignDate      DateTime?  @map("resign_date")
+  fcmToken        String?    @map("fcm_token") @db.VarChar(255)
+  resetToken      String?    @map("reset_token") @db.VarChar(255)
+  resetTokenExp   DateTime?  @map("reset_token_exp")
+  faceDescriptor  String?    @map("face_descriptor") @db.Text
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  @@map("users")
+  @@schema("auth_schema")
+}

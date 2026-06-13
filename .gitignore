@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+packages/*/dist/
+services/*/dist/
+
+BACKEND_DOCS.md
+FRONTEND_DOCS.md
+
+# Environment
+.env
+.env.local
+.env.example
+
+# Prisma
+services/*/.prisma/
+services/*/node_modules/.prisma/
+
+# Uploads
+uploads/
+
+# IDE
+.vscode/
+.idea/
+.kiro/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+
+# Prisma tools (temporary build helper)
+.prisma-tools/

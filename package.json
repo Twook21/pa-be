@@ -1,0 +1,46 @@
+{
+  "name": "fintap-microservices",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FinTap YPLP Backend - Microservices Architecture",
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail -n shared,gateway,auth,attendance,activity,request,config,notification -c blue,green,yellow,cyan,magenta,red,white,gray \"npm run dev -w packages/shared\" \"npm run dev -w services/gateway\" \"npm run dev -w services/auth\" \"npm run dev -w services/attendance\" \"npm run dev -w services/activity\" \"npm run dev -w services/request\" \"npm run dev -w services/config\" \"npm run dev -w services/notification\"",
+    "dev:gateway": "npm run dev -w services/gateway",
+    "dev:auth": "npm run dev -w services/auth",
+    "dev:attendance": "npm run dev -w services/attendance",
+    "dev:activity": "npm run dev -w services/activity",
+    "dev:request": "npm run dev -w services/request",
+    "dev:config": "npm run dev -w services/config",
+    "dev:notification": "npm run dev -w services/notification",
+    "build": "npm run build -w packages/shared && concurrently \"npm run build -w services/gateway\" \"npm run build -w services/auth\" \"npm run build -w services/attendance\" \"npm run build -w services/activity\" \"npm run build -w services/request\" \"npm run build -w services/config\" \"npm run build -w services/notification\"",
+    "build:shared": "npm run build -w packages/shared",
+    "prisma:generate": "prisma generate --schema=services/auth/prisma/schema.prisma && prisma generate --schema=services/attendance/prisma/schema.prisma && prisma generate --schema=services/activity/prisma/schema.prisma && prisma generate --schema=services/request/prisma/schema.prisma && prisma generate --schema=services/config/prisma/schema.prisma && prisma generate --schema=services/notification/prisma/schema.prisma",
+    "test": "vitest --run --workspace",
+    "clean": "rimraf packages/*/dist services/*/dist",
+    "seed": "tsx prisma/seed.ts",
+    "prisma:seed": "npx prisma db seed"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "fast-check": "^3.19.0",
+    "rimraf": "^5.0.7",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "overrides": {
+    "zod": "3.23.8"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.14.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.4.2"
+  }
+}

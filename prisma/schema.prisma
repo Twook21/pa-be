@@ -1,0 +1,251 @@
+// Consolidated Prisma schema for all services
+// Each model lives in its own PostgreSQL schema
+// This generates a single client that all services share
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["auth_schema", "attendance_schema", "activity_schema", "request_schema", "config_schema", "notification_schema"]
+}
+
+// ============================================================
+// Auth Schema
+// ============================================================
+
+enum UserRole {
+  admin
+  user
+
+  @@schema("auth_schema")
+}
+
+enum UserStatus {
+  active
+  inactive
+  resigned
+
+  @@schema("auth_schema")
+}
+
+model User {
+  id              Int        @id @default(autoincrement())
+  name            String     @db.VarChar(255)
+  email           String     @unique @db.VarChar(255)
+  emailVerifiedAt DateTime?  @map("email_verified_at")
+  password        String     @db.VarChar(255)
+  photo           String?    @db.VarChar(255)
+  role            UserRole   @default(user)
+  division        String?    @db.VarChar(255)
+  phoneNumber     String?    @map("phone_number") @db.VarChar(15)
+  bio             String?    @db.Text
+  status          UserStatus @default(active)
+  resignDate      DateTime?  @map("resign_date")
+  fcmToken        String?    @map("fcm_token") @db.VarChar(255)
+  resetToken      String?    @map("reset_token") @db.VarChar(255)
+  resetTokenExp   DateTime?  @map("reset_token_exp")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  @@map("users")
+  @@schema("auth_schema")
+}
+
+// ============================================================
+// Attendance Schema
+// ============================================================
+
+enum AttendanceStatus {
+  present
+  late
+  absent
+  sakit
+  cuti
+  dinas_luar
+
+  @@schema("attendance_schema")
+}
+
+model Attendance {
+  id                Int              @id @default(autoincrement())
+  userId            Int              @map("user_id")
+  date              DateTime         @db.Date
+  checkInTime       DateTime?        @map("check_in_time") @db.Time()
+  checkOutTime      DateTime?        @map("check_out_time") @db.Time()
+  checkInPhoto      String?          @map("check_in_photo") @db.VarChar(255)
+  checkOutPhoto     String?          @map("check_out_photo") @db.VarChar(255)
+  checkInLatitude   Decimal?         @map("check_in_latitude") @db.Decimal(10, 8)
+  checkInLongitude  Decimal?         @map("check_in_longitude") @db.Decimal(11, 8)
+  checkOutLatitude  Decimal?         @map("check_out_latitude") @db.Decimal(10, 8)
+  checkOutLongitude Decimal?         @map("check_out_longitude") @db.Decimal(11, 8)
+  status            AttendanceStatus @default(absent)
+  notes             String?          @db.Text
+  activityId        Int?             @map("activity_id")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId, date])
+  @@index([date, status])
+  @@map("attendances")
+  @@schema("attendance_schema")
+}
+
+// ============================================================
+// Activity Schema
+// ============================================================
+
+model Activity {
+  id                Int      @id @default(autoincrement())
+  name              String   @db.VarChar(255)
+  date              DateTime @unique @db.Date
+  description       String?  @db.Text
+  photo             String?  @db.VarChar(255)
+  checkInStart      String   @map("check_in_start") @db.VarChar(5)
+  checkInEnd        String   @map("check_in_end") @db.VarChar(5)
+  checkOutStart     String   @map("check_out_start") @db.VarChar(5)
+  checkOutEnd       String   @map("check_out_end") @db.VarChar(5)
+  checkInLatitude   Decimal? @map("check_in_latitude") @db.Decimal(10, 8)
+  checkInLongitude  Decimal? @map("check_in_longitude") @db.Decimal(11, 8)
+  checkOutLatitude  Decimal? @map("check_out_latitude") @db.Decimal(10, 8)
+  checkOutLongitude Decimal? @map("check_out_longitude") @db.Decimal(11, 8)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("activities")
+  @@schema("activity_schema")
+}
+
+// ============================================================
+// Request Schema
+// ============================================================
+
+enum RequestStatus {
+  pending
+  approved
+  rejected
+
+  @@schema("request_schema")
+}
+
+model LeaveRequest {
+  id           Int           @id @default(autoincrement())
+  userId       Int           @map("user_id")
+  type         String        @db.VarChar(255)
+  reason       String        @db.Text
+  startDate    DateTime      @map("start_date") @db.Date
+  endDate      DateTime      @map("end_date") @db.Date
+  status       RequestStatus @default(pending)
+  photo        String?       @db.VarChar(255)
+  note         String?       @db.Text
+  responseDate DateTime?     @map("response_date")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@map("leave_requests")
+  @@schema("request_schema")
+}
+
+model ExternalDuty {
+  id          Int           @id @default(autoincrement())
+  userId      Int           @map("user_id")
+  date        DateTime      @db.Date
+  location    String        @db.VarChar(255)
+  description String        @db.Text
+  document    String?       @db.VarChar(255)
+  status      RequestStatus @default(pending)
+  approvedBy  Int?          @map("approved_by")
+  adminNotes  String?       @map("admin_notes") @db.Text
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId, date])
+  @@map("external_duties")
+  @@schema("request_schema")
+}
+
+// ============================================================
+// Config Schema
+// ============================================================
+
+model Location {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(255)
+  latitude  Decimal  @db.Decimal(10, 8)
+  longitude Decimal  @db.Decimal(11, 8)
+  radius    Int      @default(100)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("locations")
+  @@schema("config_schema")
+}
+
+model AttendanceSetting {
+  id            Int      @id @default(autoincrement())
+  checkInStart  String   @map("check_in_start") @db.VarChar(5)
+  checkInEnd    String   @map("check_in_end") @db.VarChar(5)
+  checkOutStart String   @map("check_out_start") @db.VarChar(5)
+  checkOutEnd   String   @map("check_out_end") @db.VarChar(5)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("attendance_settings")
+  @@schema("config_schema")
+}
+
+model Calendar {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @unique @db.Date
+  year        Int
+  month       Int
+  day         Int
+  dayOfWeek   Int      @map("day_of_week")
+  isHoliday   Boolean  @default(false) @map("is_holiday")
+  holidayName String?  @map("holiday_name") @db.VarChar(255)
+  holidayType String?  @map("holiday_type") @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([year, month])
+  @@index([date, isHoliday])
+  @@map("calendars")
+  @@schema("config_schema")
+}
+
+// ============================================================
+// Notification Schema
+// ============================================================
+
+model Notification {
+  id              String    @id @default(uuid())
+  type            String    @db.VarChar(255)
+  notifiableType  String    @map("notifiable_type") @db.VarChar(255)
+  notifiableId    Int       @map("notifiable_id")
+  data            String    @db.Text
+  readAt          DateTime? @map("read_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([notifiableType, notifiableId])
+  @@map("notifications")
+  @@schema("notification_schema")
+}
+
+model UserLocation {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id")
+  latitude  Decimal  @db.Decimal(10, 8)
+  longitude Decimal  @db.Decimal(11, 8)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user_locations")
+  @@schema("notification_schema")
+}

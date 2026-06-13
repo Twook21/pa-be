@@ -1,0 +1,7 @@
+{
+    "private":  true,
+    "name":  "auth-temp",
+    "dependencies":  {
+                         "@prisma/client":  "^5.14.0"
+                     }
+}

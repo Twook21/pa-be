@@ -1,0 +1,33 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../node_modules/.prisma/activity-client"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["activity_schema"]
+}
+
+model Activity {
+  id                Int      @id @default(autoincrement())
+  name              String   @db.VarChar(255)
+  date              DateTime @unique @db.Date
+  description       String?  @db.Text
+  photo             String?  @db.VarChar(255)
+  checkInStart      String   @map("check_in_start") @db.VarChar(5)
+  checkInEnd        String   @map("check_in_end") @db.VarChar(5)
+  checkOutStart     String   @map("check_out_start") @db.VarChar(5)
+  checkOutEnd       String   @map("check_out_end") @db.VarChar(5)
+  checkInLatitude   Decimal? @map("check_in_latitude") @db.Decimal(10, 8)
+  checkInLongitude  Decimal? @map("check_in_longitude") @db.Decimal(11, 8)
+  checkOutLatitude  Decimal? @map("check_out_latitude") @db.Decimal(10, 8)
+  checkOutLongitude Decimal? @map("check_out_longitude") @db.Decimal(11, 8)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("activities")
+  @@schema("activity_schema")
+}

@@ -1,0 +1,38 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../node_modules/.prisma/notification-client"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["notification_schema"]
+}
+
+model Notification {
+  id              String    @id @default(uuid())
+  type            String    @db.VarChar(255)
+  notifiableType  String    @map("notifiable_type") @db.VarChar(255)
+  notifiableId    Int       @map("notifiable_id")
+  data            String    @db.Text
+  readAt          DateTime? @map("read_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([notifiableType, notifiableId])
+  @@map("notifications")
+  @@schema("notification_schema")
+}
+
+model UserLocation {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id")
+  latitude  Decimal  @db.Decimal(10, 8)
+  longitude Decimal  @db.Decimal(11, 8)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user_locations")
+  @@schema("notification_schema")
+}
