@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import * as userController from '../controllers/user.controller.js';
-import { createS3Uploader } from '@fintap/shared';
+import { createS3Uploader } from '@fintap/shared/dist/utils/s3-upload.js';
 import { internalAuth, requireAdmin } from '../middleware/internal-auth.js';
 
 const router = Router();

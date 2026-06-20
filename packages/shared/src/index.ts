@@ -23,7 +23,6 @@ export { createLogger } from './utils/logger-factory.js';
 
 // Constants
 export * from './constants/index.js';
-export * from './utils/s3-upload.js';
 
 // Validators
 export * from './validators/coordinate.schema.js';

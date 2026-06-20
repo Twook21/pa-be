@@ -1,7 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import fs from 'fs';
-import { formatSuccess, createS3Uploader } from '@fintap/shared';
+import { formatSuccess } from '@fintap/shared';
+import { createS3Uploader } from '@fintap/shared/dist/utils/s3-upload.js';
 import { internalAuth, extractUser } from '../middleware/internal-auth.js';
 import * as userService from '../services/user.service.js';
 

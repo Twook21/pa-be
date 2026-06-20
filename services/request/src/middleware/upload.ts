@@ -1,5 +1,5 @@
 import multer from 'multer';
-import { createS3Uploader } from '@fintap/shared';
+import { createS3Uploader } from '@fintap/shared/dist/utils/s3-upload.js';
 
 const UPLOAD_BUCKET = process.env.S3_BUCKET || 'uploads';
 export const upload = createS3Uploader(
