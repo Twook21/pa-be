@@ -22,7 +22,12 @@ app.use((req, _res, next) => {
 app.use(helmet());
 
 // CORS configuration
-const corsOrigins = process.env.CORS_ORIGINS?.split(',').map(o => o.trim()) || ['http://localhost:3010'];
+const fallbackOrigins = [
+  'http://localhost:3010',
+  'https://pa-fe.vercel.app',
+  'https://fintap-v2.perwakilanyplppgrijawabarat.com'
+];
+const corsOrigins = process.env.CORS_ORIGINS?.split(',').map(o => o.trim()) || fallbackOrigins;
 app.use(cors({
   origin: corsOrigins,
   credentials: true,
