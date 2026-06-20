@@ -1,5 +1,6 @@
 import express from 'express';
-import helmet from 'helmet';
+import _helmet from 'helmet';
+const helmet = _helmet as any;
 import cors from 'cors';
 import morgan from 'morgan';
 import { v4 as uuidv4 } from 'uuid';
