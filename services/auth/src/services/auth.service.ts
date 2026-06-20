@@ -103,6 +103,7 @@ export async function register(data: {
 export async function login(data: {
   email: string;
   password: string;
+  deviceId?: string;
 }): Promise<AuthResponse> {
   if (!data.email || !data.password) {
     throw new ValidationError('Validation failed', [
@@ -122,6 +123,14 @@ export async function login(data: {
   const isPasswordValid = await bcrypt.compare(data.password, user.password);
   if (!isPasswordValid) {
     throw new AuthenticationError('Invalid email or password');
+  }
+
+  // Update the registered device for this user (soft binding: last login wins)
+  if (data.deviceId) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { deviceId: data.deviceId },
+    });
   }
 
   const token = generateToken(user);

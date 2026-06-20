@@ -6,12 +6,14 @@ import { configClient } from '../clients/config-client.js';
 import { activityClient } from '../clients/activity-client.js';
 import { requestClient } from '../clients/request-client.js';
 import { notificationClient } from '../clients/notification-client.js';
+import { authClient } from '../clients/auth-client.js';
 
 export async function checkIn(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { userId } = extractUser(req);
     const { latitude, longitude, photo, notes } = req.body;
     const requestId = req.headers['x-request-id'] as string | undefined;
+    const deviceId = req.headers['x-device-id'] as string | undefined;
 
     // Basic validation
     if (latitude == null || longitude == null) {
@@ -24,6 +26,16 @@ export async function checkIn(req: Request, res: Response, next: NextFunction): 
       throw new ValidationError('Validation failed', [
         { field: 'photo', message: 'Photo is required' },
       ]);
+    }
+
+    // Device binding check: only the device used to login can submit attendance
+    if (deviceId) {
+      const deviceCheck = await authClient.validateDevice(userId, deviceId);
+      if (!deviceCheck.valid) {
+        throw new ValidationError('Device tidak dikenali', [
+          { field: 'device', message: deviceCheck.reason || 'Absensi hanya bisa dilakukan dari perangkat yang terakhir digunakan untuk login.' },
+        ]);
+      }
     }
 
     const today = new Date().toISOString().split('T')[0];
@@ -109,6 +121,7 @@ export async function checkOut(req: Request, res: Response, next: NextFunction):
     const { userId } = extractUser(req);
     const { latitude, longitude, photo, notes } = req.body;
     const requestId = req.headers['x-request-id'] as string | undefined;
+    const deviceId = req.headers['x-device-id'] as string | undefined;
 
     // Basic validation
     if (latitude == null || longitude == null) {
@@ -121,6 +134,16 @@ export async function checkOut(req: Request, res: Response, next: NextFunction):
       throw new ValidationError('Validation failed', [
         { field: 'photo', message: 'Photo is required' },
       ]);
+    }
+
+    // Device binding check: only the device used to login can submit attendance
+    if (deviceId) {
+      const deviceCheck = await authClient.validateDevice(userId, deviceId);
+      if (!deviceCheck.valid) {
+        throw new ValidationError('Device tidak dikenali', [
+          { field: 'device', message: deviceCheck.reason || 'Absensi hanya bisa dilakukan dari perangkat yang terakhir digunakan untuk login.' },
+        ]);
+      }
     }
 
     const today = new Date().toISOString().split('T')[0];

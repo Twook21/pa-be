@@ -70,4 +70,70 @@ router.get('/users/:id', async (req: Request, res: Response, next: NextFunction)
   }
 });
 
+
+/**
+ * Internal endpoint: POST /internal/validate-device
+ * Validates that the device ID matches what was registered for this user at login.
+ * Called by the attendance service before allowing check-in/check-out.
+ *
+ * Body: { userId: number, deviceId: string }
+ * Response: { valid: boolean, reason?: string }
+ */
+router.post('/validate-device', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (req.headers['x-internal-service'] !== 'true') {
+      res.status(403).json({ status: 'error', message: 'Forbidden', code: 'AUTH_FORBIDDEN' });
+      return;
+    }
+
+    const { userId, deviceId } = req.body;
+
+    if (!userId || !deviceId) {
+      res.status(400).json({
+        status: 'error',
+        message: 'userId and deviceId are required',
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: Number(userId) },
+      select: { deviceId: true, status: true },
+    });
+
+    if (!user) {
+      res.status(200).json(formatSuccess('Device validation result', {
+        valid: false,
+        reason: 'User not found',
+      }));
+      return;
+    }
+
+    if (user.status !== 'active') {
+      res.status(200).json(formatSuccess('Device validation result', {
+        valid: false,
+        reason: 'Account is inactive',
+      }));
+      return;
+    }
+
+    // If no device has ever been registered for this user, allow it
+    // (backward compat: user might not have logged in since feature was added)
+    if (!user.deviceId) {
+      res.status(200).json(formatSuccess('Device validation result', { valid: true }));
+      return;
+    }
+
+    const valid = user.deviceId === deviceId;
+
+    res.status(200).json(formatSuccess('Device validation result', {
+      valid,
+      reason: valid ? undefined : 'Absensi hanya bisa dilakukan dari perangkat yang terakhir digunakan untuk login. Silakan login ulang dari perangkat ini.',
+    }));
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
