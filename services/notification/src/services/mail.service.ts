@@ -63,9 +63,14 @@ export class MailService {
       .replace('activity_created', 'activity.created')
       .replace('password_reset', 'password.reset');
 
-    const fromAddress = process.env.SMTP_FROM || process.env.MAIL_FROM_ADDRESS || 'noreply@fintap.id';
-    const fromName = process.env.MAIL_FROM_NAME || 'FinTap YPLP';
-    const from = `"${fromName}" <${fromAddress}>`;
+    const envFrom = process.env.SMTP_FROM || process.env.MAIL_FROM_ADDRESS;
+    let from = envFrom || 'noreply@fintap-yplp.perwakilanyplppgrijawabarat.com';
+
+    // If SMTP_FROM doesn't contain a formatted name (e.g. "Name <email>"), format it
+    if (!from.includes('<')) {
+      const fromName = process.env.MAIL_FROM_NAME || 'FinTap YPLP';
+      from = `"${fromName}" <${from}>`;
+    }
     
     const subject = this.getEmailSubject(normalizedType);
     const html = this.getEmailBody(normalizedType, data);
