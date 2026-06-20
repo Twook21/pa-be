@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as authController from '../controllers/auth.controller.js';
 import { internalAuth } from '../middleware/internal-auth.js';
+import { upload } from '@fintap/shared';
 
 const router = Router();
 
@@ -13,6 +14,7 @@ router.post('/reset-password', authController.resetPassword);
 // Protected routes (gateway has already validated JWT and injected headers)
 router.post('/logout', internalAuth, authController.logout);
 router.get('/me', internalAuth, authController.getMe);
+router.post('/profile', internalAuth, upload.single('photo'), authController.updateProfile);
 
 // Biometric endpoints (protected, mapped via gateway)
 router.get('/biometric', internalAuth, authController.getBiometricStatus);

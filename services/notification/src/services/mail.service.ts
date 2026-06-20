@@ -15,10 +15,10 @@ export class MailService {
   private initialize(): void {
     if (this.transporter) return;
 
-    const host = process.env.SMTP_HOST;
-    const port = parseInt(process.env.SMTP_PORT || '587', 10);
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
+    const host = process.env.SMTP_HOST || process.env.MAIL_HOST;
+    const port = parseInt(process.env.SMTP_PORT || process.env.MAIL_PORT || '587', 10);
+    const user = process.env.SMTP_USER || process.env.MAIL_USERNAME;
+    const pass = process.env.SMTP_PASS || process.env.MAIL_PASSWORD;
 
     if (!host || !user || !pass) {
       logger.warn('SMTP configuration incomplete, email notifications disabled');
@@ -63,7 +63,10 @@ export class MailService {
       .replace('activity_created', 'activity.created')
       .replace('password_reset', 'password.reset');
 
-    const from = process.env.SMTP_FROM || '"FinTap YPLP" <noreply@fintap.id>';
+    const fromAddress = process.env.SMTP_FROM || process.env.MAIL_FROM_ADDRESS || 'noreply@fintap.id';
+    const fromName = process.env.MAIL_FROM_NAME || 'FinTap YPLP';
+    const from = `"${fromName}" <${fromAddress}>`;
+    
     const subject = this.getEmailSubject(normalizedType);
     const html = this.getEmailBody(normalizedType, data);
 
@@ -229,10 +232,10 @@ export class MailService {
       'holiday.tomorrow': `Besok adalah hari libur: <strong>${data.holiday_name || 'Hari Libur'}</strong>. Selamat beristirahat!`,
       'password.reset': `<p>Permintaan reset password telah kami terima. Link ini berlaku selama <strong>1 jam</strong> ke depan.</p>
 <div style="text-align: center; margin: 32px 0;">
-  <a href="${process.env.FRONTEND_URL || 'http://localhost:3010'}/reset-password?token=${data.resetToken}&email=${data.email}" class="button">Reset Password Sekarang</a>
+  <a href="${process.env.FRONTEND_URL || 'https://pa-fe.vercel.app'}/reset-password?token=${data.resetToken}&email=${data.email}" class="button">Reset Password Sekarang</a>
 </div>
 <p style="font-size: 14px; color: #64748b;">Jika tombol di atas tidak berfungsi, salin dan tempel link berikut ke browser Anda:</p>
-<a href="${process.env.FRONTEND_URL || 'http://localhost:3010'}/reset-password?token=${data.resetToken}&email=${data.email}" class="muted-link">${process.env.FRONTEND_URL || 'http://localhost:3010'}/reset-password?token=${data.resetToken}&email=${data.email}</a>
+<a href="${process.env.FRONTEND_URL || 'https://pa-fe.vercel.app'}/reset-password?token=${data.resetToken}&email=${data.email}" class="muted-link">${process.env.FRONTEND_URL || 'https://pa-fe.vercel.app'}/reset-password?token=${data.resetToken}&email=${data.email}</a>
 <p style="margin-top: 24px; font-size: 14px; color: #64748b;">Jika Anda tidak merasa meminta reset password, mohon abaikan email ini. Akun Anda tetap aman.</p>`,
     };
     return messages[type] || 'Anda memiliki notifikasi baru dari FinTap.';

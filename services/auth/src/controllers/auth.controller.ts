@@ -65,6 +65,27 @@ export async function getMe(req: Request, res: Response, next: NextFunction): Pr
   }
 }
 
+export async function updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { userId } = extractUser(req);
+    const file = (req as any).file as Express.Multer.File | undefined;
+    const { name, email, phone_number, phoneNumber } = req.body;
+
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (phone_number || phoneNumber) updateData.phoneNumber = phone_number || phoneNumber;
+    if (file) {
+      updateData.photo = (file as any).location || file.filename;
+    }
+
+    const user = await userService.updateUser(userId, updateData);
+    res.status(200).json(formatSuccess('Profile updated successfully', user));
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getBiometricStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { userId } = extractUser(req);

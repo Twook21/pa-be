@@ -7,7 +7,7 @@ export class NotificationClient {
   constructor() {
     this.http = axios.create({
       baseURL: process.env.SERVICE_NOTIFICATION_URL,
-      timeout: 5_000,
+      timeout: 2_000, // Reduced from 5s to 2s to ensure it fails fast within Vercel's 10s limit
       headers: { 'x-internal-service': 'true' },
     });
   }
@@ -31,7 +31,7 @@ export class NotificationClient {
     );
   }
 
-  private async withRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
+  private async withRetry<T>(fn: () => Promise<T>, maxRetries = 1): Promise<T> {
     let lastError: Error | undefined;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
@@ -39,7 +39,7 @@ export class NotificationClient {
       } catch (error) {
         lastError = error as Error;
         if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay instead of 1000ms
         }
       }
     }
