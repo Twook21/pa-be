@@ -1,4 +1,5 @@
-import rateLimit from 'express-rate-limit';
+import _rateLimit from 'express-rate-limit';
+const rateLimit = _rateLimit as any;
 import { formatError } from '@fintap/shared';
 
 /**
