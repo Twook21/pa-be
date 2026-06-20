@@ -16,4 +16,7 @@ router.post('/', requireAdmin, (req, res, next) => locationController.create(req
 // PUT /locations/:id - Update a location (admin only)
 router.put('/:id', requireAdmin, (req, res, next) => locationController.update(req, res, next));
 
+// DELETE /locations/:id - Delete a location (admin only)
+router.delete('/:id', requireAdmin, (req, res, next) => locationController.delete(req, res, next));
+
 export default router;

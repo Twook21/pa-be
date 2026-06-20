@@ -41,7 +41,7 @@ export async function checkIn(req: Request, res: Response, next: NextFunction): 
     const today = new Date().toISOString().split('T')[0];
 
     // Fetch office location and attendance settings from Config Service
-    const [officeLocation, attendanceSettings, activity, externalDuty] = await Promise.all([
+    const [officeLocations, attendanceSettings, activity, externalDuty] = await Promise.all([
       configClient.getCurrentLocation(requestId),
       configClient.getActiveSettings(requestId),
       activityClient.getActivityByDate(today, requestId),
@@ -56,11 +56,11 @@ export async function checkIn(req: Request, res: Response, next: NextFunction): 
       checkOutEnd: attendanceSettings.checkOutEnd,
     };
 
-    let effectiveLocation = {
-      latitude: officeLocation.latitude,
-      longitude: officeLocation.longitude,
-      radius: officeLocation.radius,
-    };
+    let effectiveLocations = officeLocations.map(loc => ({
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      radius: loc.radius,
+    }));
 
     if (activity) {
       // Activity overrides time settings
@@ -73,11 +73,11 @@ export async function checkIn(req: Request, res: Response, next: NextFunction): 
 
       // Activity overrides location if specified
       if (activity.checkInLatitude != null && activity.checkInLongitude != null) {
-        effectiveLocation = {
+        effectiveLocations = [{
           latitude: activity.checkInLatitude,
           longitude: activity.checkInLongitude,
-          radius: officeLocation.radius, // Keep the same radius
-        };
+          radius: officeLocations[0]?.radius || 50, // Use first office's radius or default to 50
+        }];
       }
     }
 
@@ -87,7 +87,7 @@ export async function checkIn(req: Request, res: Response, next: NextFunction): 
     const result = await attendanceService.checkIn({
       userId,
       data: { latitude, longitude, photo, notes },
-      officeLocation: skipGPS ? undefined : effectiveLocation,
+      officeLocations: skipGPS ? undefined : effectiveLocations,
       attendanceSettings: effectiveSettings,
       activityId: activity?.id,
     });
@@ -149,7 +149,7 @@ export async function checkOut(req: Request, res: Response, next: NextFunction):
     const today = new Date().toISOString().split('T')[0];
 
     // Fetch office location and attendance settings from Config Service
-    const [officeLocation, attendanceSettings, activity, externalDuty] = await Promise.all([
+    const [officeLocations, attendanceSettings, activity, externalDuty] = await Promise.all([
       configClient.getCurrentLocation(requestId),
       configClient.getActiveSettings(requestId),
       activityClient.getActivityByDate(today, requestId),
@@ -164,11 +164,11 @@ export async function checkOut(req: Request, res: Response, next: NextFunction):
       checkOutEnd: attendanceSettings.checkOutEnd,
     };
 
-    let effectiveLocation = {
-      latitude: officeLocation.latitude,
-      longitude: officeLocation.longitude,
-      radius: officeLocation.radius,
-    };
+    let effectiveLocations = officeLocations.map(loc => ({
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      radius: loc.radius,
+    }));
 
     if (activity) {
       // Activity overrides time settings
@@ -181,11 +181,11 @@ export async function checkOut(req: Request, res: Response, next: NextFunction):
 
       // Activity overrides location if specified
       if (activity.checkOutLatitude != null && activity.checkOutLongitude != null) {
-        effectiveLocation = {
+        effectiveLocations = [{
           latitude: activity.checkOutLatitude,
           longitude: activity.checkOutLongitude,
-          radius: officeLocation.radius,
-        };
+          radius: officeLocations[0]?.radius || 50, // Use first office's radius or default to 50
+        }];
       }
     }
 
@@ -195,7 +195,7 @@ export async function checkOut(req: Request, res: Response, next: NextFunction):
     const result = await attendanceService.checkOut({
       userId,
       data: { latitude, longitude, photo, notes },
-      officeLocation: skipGPS ? undefined : effectiveLocation,
+      officeLocations: skipGPS ? undefined : effectiveLocations,
       attendanceSettings: effectiveSettings,
     });
 

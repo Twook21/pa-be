@@ -50,12 +50,34 @@ export class LocationController {
   }
 
   /**
-   * GET /internal/locations/current - Get current active location (internal).
+   * DELETE /:id - Delete a location (admin only).
+   */
+  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        res.status(400).json({
+          status: 'error',
+          message: 'Invalid location ID',
+          code: 'VALIDATION_ERROR',
+        });
+        return;
+      }
+
+      await locationService.delete(id);
+      res.status(200).json(formatSuccess('Location deleted successfully', null));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /internal/locations/current - Get current active locations (internal).
    */
   async getCurrent(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const location = await locationService.getCurrentLocation();
-      res.status(200).json(formatSuccess('Current location retrieved', location));
+      const locations = await locationService.getActiveLocations();
+      res.status(200).json(formatSuccess('Current locations retrieved', locations));
     } catch (error) {
       next(error);
     }

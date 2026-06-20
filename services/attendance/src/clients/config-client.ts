@@ -18,10 +18,10 @@ export class ConfigClient {
   }
 
   /**
-   * Get the current active office location from Config Service.
+   * Get the current active office locations from Config Service.
    * GET /internal/locations/current
    */
-  async getCurrentLocation(requestId?: string): Promise<LocationDTO> {
+  async getCurrentLocation(requestId?: string): Promise<LocationDTO[]> {
     const res = await this.withRetry(() =>
       this.http.get('/internal/locations/current', {
         headers: { 'x-request-id': requestId || '' },

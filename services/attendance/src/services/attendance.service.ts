@@ -95,26 +95,34 @@ function determineStatus(checkInTime: Date, checkInEnd: string): AttendanceStatu
 }
 
 /**
- * Validate GPS coordinates against office location using haversine distance.
- * Throws ValidationError if distance exceeds the allowed radius.
+ * Validate GPS coordinates against multiple office locations using haversine distance.
+ * Throws ValidationError if distance exceeds the allowed radius for all locations.
  */
 function validateGPS(
   userLat: number,
   userLon: number,
-  officeLat: number,
-  officeLon: number,
-  radius: number
+  officeLocations: Array<{ latitude: number; longitude: number; radius: number }>
 ): void {
-  const distance = haversineDistance(userLat, userLon, officeLat, officeLon);
+  let minDistance = Infinity;
+  let allowedRadius = 0;
 
-  if (distance > radius) {
-    throw new ValidationError('GPS validation failed', [
-      {
-        field: 'location',
-        message: `You are ${Math.round(distance)}m from the office. Maximum allowed distance is ${radius}m.`,
-      },
-    ]);
+  for (const office of officeLocations) {
+    const distance = haversineDistance(userLat, userLon, office.latitude, office.longitude);
+    if (distance <= office.radius) {
+      return; // Validation passed!
+    }
+    if (distance < minDistance) {
+      minDistance = distance;
+      allowedRadius = office.radius;
+    }
   }
+
+  throw new ValidationError('GPS validation failed', [
+    {
+      field: 'location',
+      message: `You are ${Math.round(minDistance)}m from the nearest office. Maximum allowed distance is ${allowedRadius}m.`,
+    },
+  ]);
 }
 
 /**
@@ -132,13 +140,13 @@ function getTodayDateString(): string {
 export interface CheckInParams {
   userId: number;
   data: CheckInDTO;
-  officeLocation?: { latitude: number; longitude: number; radius: number };
+  officeLocations?: Array<{ latitude: number; longitude: number; radius: number }>;
   attendanceSettings?: { checkInStart: string; checkInEnd: string; checkOutStart: string; checkOutEnd: string };
   activityId?: number;
 }
 
 export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
-  const { userId, data, officeLocation, attendanceSettings, activityId } = params;
+  const { userId, data, officeLocations, attendanceSettings, activityId } = params;
   const today = getTodayDateString();
   const now = new Date();
 
@@ -156,14 +164,12 @@ export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
     ]);
   }
 
-  // Validate GPS if office location is provided
-  if (officeLocation) {
+  // Validate GPS if office locations are provided
+  if (officeLocations && officeLocations.length > 0) {
     validateGPS(
       data.latitude,
       data.longitude,
-      officeLocation.latitude,
-      officeLocation.longitude,
-      officeLocation.radius
+      officeLocations
     );
   }
 
@@ -232,12 +238,12 @@ export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
 export interface CheckOutParams {
   userId: number;
   data: CheckOutDTO;
-  officeLocation?: { latitude: number; longitude: number; radius: number };
+  officeLocations?: Array<{ latitude: number; longitude: number; radius: number }>;
   attendanceSettings?: { checkInStart: string; checkInEnd: string; checkOutStart: string; checkOutEnd: string };
 }
 
 export async function checkOut(params: CheckOutParams): Promise<AttendanceDTO> {
-  const { userId, data, officeLocation, attendanceSettings } = params;
+  const { userId, data, officeLocations, attendanceSettings } = params;
   const today = getTodayDateString();
   const now = new Date();
 
@@ -261,14 +267,12 @@ export async function checkOut(params: CheckOutParams): Promise<AttendanceDTO> {
     ]);
   }
 
-  // Validate GPS if office location is provided
-  if (officeLocation) {
+  // Validate GPS if office locations are provided
+  if (officeLocations && officeLocations.length > 0) {
     validateGPS(
       data.latitude,
       data.longitude,
-      officeLocation.latitude,
-      officeLocation.longitude,
-      officeLocation.radius
+      officeLocations
     );
   }
 

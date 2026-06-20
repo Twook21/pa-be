@@ -106,19 +106,33 @@ export class LocationService {
   }
 
   /**
-   * Get the current active location (internal endpoint).
+   * Delete a location (admin only).
    */
-  async getCurrentLocation() {
-    const location = await prisma.location.findFirst({
+  async delete(id: number) {
+    const existing = await prisma.location.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundError('Location not found');
+    }
+
+    await prisma.location.delete({
+      where: { id },
+    });
+  }
+
+  /**
+   * Get all current active locations (internal endpoint).
+   */
+  async getActiveLocations() {
+    const locations = await prisma.location.findMany({
       where: { isActive: true },
       orderBy: { createdAt: 'desc' },
     });
 
-    if (!location) {
-      throw new NotFoundError('No active location found');
+    if (!locations || locations.length === 0) {
+      throw new NotFoundError('No active locations found');
     }
 
-    return this.formatLocation(location);
+    return locations.map((loc) => this.formatLocation(loc));
   }
 
   /**
