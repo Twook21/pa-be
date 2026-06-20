@@ -126,11 +126,12 @@ function validateGPS(
 }
 
 /**
- * Get today's date string in YYYY-MM-DD format (local timezone).
+ * Get today's date string in YYYY-MM-DD format (WIB timezone).
  */
 function getTodayDateString(): string {
   const now = new Date();
-  return now.toISOString().split('T')[0];
+  const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+  return wibTime.toISOString().split('T')[0];
 }
 
 // ============================================================
@@ -179,7 +180,8 @@ export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
     const [endHour, endMinute] = attendanceSettings.checkInEnd.split(':').map(Number);
     const startMinutes = startHour * 60 + startMinute;
     const endMinutes = endHour * 60 + endMinute;
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    const currentMinutes = wibTime.getUTCHours() * 60 + wibTime.getUTCMinutes();
 
     // Allow check-in only between start and a reasonable window after end (e.g., 2 hours)
     if (currentMinutes < startMinutes) {
@@ -199,7 +201,8 @@ export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
   const photoPath = await savePhoto(data.photo, userId, 'checkin');
 
   // Create or update attendance record
-  const checkInTime = new Date(`1970-01-01T${now.toTimeString().split(' ')[0]}`);
+  const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+  const checkInTime = new Date(`1970-01-01T${wibTime.toISOString().split('T')[1].split('.')[0]}`);
 
   let attendance;
   if (existing) {
@@ -292,7 +295,7 @@ export async function checkOut(params: CheckOutParams): Promise<AttendanceDTO> {
   // Save photo to S3
   const photoPath = await savePhoto(data.photo, userId, 'checkout');
 
-  const checkOutTime = new Date(`1970-01-01T${now.toTimeString().split(' ')[0]}`);
+  const checkOutTime = new Date(`1970-01-01T${new Date(now.getTime() + (7 * 60 * 60 * 1000)).toISOString().split('T')[1].split('.')[0]}`);
 
   const attendance = await prisma.attendance.update({
     where: { id: existing.id },

@@ -261,8 +261,9 @@ export async function getToday(req: Request, res: Response, next: NextFunction):
       }
 
       const now = new Date();
-      // Calculate current minutes (local server time matching the time window strings)
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      // Calculate current minutes using WIB (UTC+7)
+      const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+      const currentMinutes = wibTime.getUTCHours() * 60 + wibTime.getUTCMinutes();
 
       const [inStartH, inStartM] = effectiveSettings.checkInStart.split(':').map(Number);
       const [inEndH, inEndM] = effectiveSettings.checkInEnd.split(':').map(Number);
