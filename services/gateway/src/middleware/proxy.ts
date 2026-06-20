@@ -7,6 +7,10 @@ import { ServiceUnavailableError } from '@fintap/shared';
 
 const PROXY_TIMEOUT = 30_000; // 30 seconds (for file uploads)
 
+// Global keep-alive agents to reduce TCP handshake overhead in serverless
+const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 100 });
+const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 100 });
+
 export async function proxyMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   const matchedRoute = ROUTE_MAP.find(r => req.path.startsWith(r.prefix));
   if (!matchedRoute) {
@@ -64,6 +68,7 @@ function pipeMultipart(req: Request, res: Response, serviceUrl: string, path: st
         'x-internal-service': 'true',
       },
       timeout: PROXY_TIMEOUT,
+      agent: url.protocol === 'https:' ? httpsAgent : httpAgent,
     };
 
     const requestModule = url.protocol === 'https:' ? https : http;
@@ -124,6 +129,8 @@ async function proxyJson(
       },
       timeout: PROXY_TIMEOUT,
       validateStatus: () => true,
+      httpAgent,
+      httpsAgent,
     });
 
     res.status(response.status).json(response.data);
