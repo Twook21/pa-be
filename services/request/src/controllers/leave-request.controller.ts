@@ -44,7 +44,7 @@ export class LeaveRequestController {
         reason: req.body.reason,
         startDate: req.body.startDate || req.body.start_date,
         endDate: req.body.endDate || req.body.end_date,
-        photo: req.file ? `/uploads/${req.file.filename}` : undefined,
+        photo: req.file ? ((req.file as any).location || `/uploads/${req.file.filename}`) : undefined,
       };
 
       const leaveRequest = await leaveRequestService.create(payload, userId, requestId);

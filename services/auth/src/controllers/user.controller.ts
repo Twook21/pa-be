@@ -16,7 +16,7 @@ function normalizeBody(body: any, file?: Express.Multer.File) {
     phoneNumber: body.phone_number || body.phoneNumber,
     status: body.status,
     resignDate: body.resign_date || body.resignDate,
-    photo: file ? file.filename : body.photo,
+    photo: file ? ((file as any).location || file.filename) : body.photo,
     fcmToken: body.fcm_token || body.fcmToken,
   };
 }
@@ -102,7 +102,9 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
     if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber;
     if (data.status !== undefined) updateData.status = data.status;
     if (data.resignDate !== undefined) updateData.resignDate = data.resignDate;
-    if (data.photo !== undefined) updateData.photo = data.photo;
+    if (file) {
+      updateData.photo = (file as any).location || file.filename;
+    }
     if (data.fcmToken !== undefined) updateData.fcmToken = data.fcmToken;
 
     const user = await userService.updateUser(id, updateData);

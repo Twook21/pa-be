@@ -43,7 +43,7 @@ export class ExternalDutyController {
         date: req.body.date,
         location: req.body.location,
         description: req.body.description,
-        document: req.file ? `/uploads/${req.file.filename}` : undefined,
+        document: req.file ? ((req.file as any).location || `/uploads/${req.file.filename}`) : undefined,
       };
 
       const duty = await externalDutyService.create(payload, userId, requestId);

@@ -1,39 +1,14 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import fs from 'fs';
-import { formatSuccess } from '@fintap/shared';
+import { formatSuccess, createS3Uploader } from '@fintap/shared';
 import { internalAuth, extractUser } from '../middleware/internal-auth.js';
 import * as userService from '../services/user.service.js';
 
 const router = Router();
 
-// Ensure uploads directory exists
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-// Multer config
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
-  filename: (_req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = file.originalname.split('.').pop();
-    cb(null, `profile-${uniqueSuffix}.${ext}`);
-  },
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
-  fileFilter: (_req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  },
-});
+const UPLOAD_BUCKET = process.env.S3_BUCKET || 'uploads';
+const upload = createS3Uploader(UPLOAD_BUCKET, 'profile', 2 * 1024 * 1024); // 2MB limit
 
 // All profile routes require authentication
 router.use(internalAuth);
@@ -69,7 +44,9 @@ router.post('/', upload.single('photo'), async (req: Request, res: Response, nex
     if (req.body.phoneNumber !== undefined) updateData.phoneNumber = req.body.phoneNumber;
     if (req.body.bio !== undefined) updateData.bio = req.body.bio;
     if (req.body.division !== undefined) updateData.division = req.body.division;
-    if (file) updateData.photo = file.filename;
+    if (file) {
+      updateData.photo = (file as any).location || file.filename;
+    }
 
     const user = await userService.updateUser(userId, updateData);
     res.status(200).json(formatSuccess('Profile updated', user));
@@ -94,7 +71,9 @@ router.patch('/', upload.single('photo'), async (req: Request, res: Response, ne
     if (req.body.phoneNumber !== undefined) updateData.phoneNumber = req.body.phoneNumber;
     if (req.body.bio !== undefined) updateData.bio = req.body.bio;
     if (req.body.division !== undefined) updateData.division = req.body.division;
-    if (file) updateData.photo = file.filename;
+    if (file) {
+      updateData.photo = (file as any).location || file.filename;
+    }
 
     const user = await userService.updateUser(userId, updateData);
     res.status(200).json(formatSuccess('Profile updated', user));
