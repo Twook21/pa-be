@@ -8,6 +8,8 @@ export interface AttendanceDTO {
   checkOutTime: string | null;
   checkInPhoto: string | null;
   checkOutPhoto: string | null;
+  checkInLocationName: string | null;
+  checkOutLocationName: string | null;
   checkInLatitude: number | null;
   checkInLongitude: number | null;
   checkOutLatitude: number | null;

@@ -27,6 +27,8 @@ function toAttendanceDTO(record: any): AttendanceDTO {
     checkOutTime: record.checkOutTime ? formatTime(record.checkOutTime) : null,
     checkInPhoto: record.checkInPhoto,
     checkOutPhoto: record.checkOutPhoto,
+    checkInLocationName: record.checkInLocationName || null,
+    checkOutLocationName: record.checkOutLocationName || null,
     checkInLatitude: record.checkInLatitude ? Number(record.checkInLatitude) : null,
     checkInLongitude: record.checkInLongitude ? Number(record.checkInLongitude) : null,
     checkOutLatitude: record.checkOutLatitude ? Number(record.checkOutLatitude) : null,
@@ -101,15 +103,15 @@ function determineStatus(checkInTime: Date, checkInEnd: string): AttendanceStatu
 function validateGPS(
   userLat: number,
   userLon: number,
-  officeLocations: Array<{ latitude: number; longitude: number; radius: number }>
-): void {
+  officeLocations: Array<{ name: string; latitude: number; longitude: number; radius: number }>
+): string {
   let minDistance = Infinity;
   let allowedRadius = 0;
 
   for (const office of officeLocations) {
     const distance = haversineDistance(userLat, userLon, office.latitude, office.longitude);
     if (distance <= office.radius) {
-      return; // Validation passed!
+      return office.name; // Validation passed!
     }
     if (distance < minDistance) {
       minDistance = distance;
@@ -141,9 +143,18 @@ function getTodayDateString(): string {
 export interface CheckInParams {
   userId: number;
   data: CheckInDTO;
-  officeLocations?: Array<{ latitude: number; longitude: number; radius: number }>;
+  officeLocations?: Array<{ name: string; latitude: number; longitude: number; radius: number }>;
+  locationNameOverride?: string;
   attendanceSettings?: { checkInStart: string; checkInEnd: string; checkOutStart: string; checkOutEnd: string };
   activityId?: number;
+}
+
+export interface CheckOutParams {
+  userId: number;
+  data: CheckOutDTO;
+  officeLocations?: Array<{ name: string; latitude: number; longitude: number; radius: number }>;
+  locationNameOverride?: string;
+  attendanceSettings?: { checkInStart: string; checkInEnd: string; checkOutStart: string; checkOutEnd: string };
 }
 
 export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
@@ -165,9 +176,11 @@ export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
     ]);
   }
 
+  let finalLocationName = params.locationNameOverride || null;
+
   // Validate GPS if office locations are provided
   if (officeLocations && officeLocations.length > 0) {
-    validateGPS(
+    finalLocationName = validateGPS(
       data.latitude,
       data.longitude,
       officeLocations
@@ -212,6 +225,7 @@ export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
       data: {
         checkInTime,
         checkInPhoto: photoPath,
+        checkInLocationName: finalLocationName,
         checkInLatitude: data.latitude,
         checkInLongitude: data.longitude,
         status,
@@ -226,6 +240,7 @@ export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
         date: new Date(today),
         checkInTime,
         checkInPhoto: photoPath,
+        checkInLocationName: finalLocationName,
         checkInLatitude: data.latitude,
         checkInLongitude: data.longitude,
         status,
@@ -238,12 +253,6 @@ export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
   return toAttendanceDTO(attendance);
 }
 
-export interface CheckOutParams {
-  userId: number;
-  data: CheckOutDTO;
-  officeLocations?: Array<{ latitude: number; longitude: number; radius: number }>;
-  attendanceSettings?: { checkInStart: string; checkInEnd: string; checkOutStart: string; checkOutEnd: string };
-}
 
 export async function checkOut(params: CheckOutParams): Promise<AttendanceDTO> {
   const { userId, data, officeLocations, attendanceSettings } = params;
@@ -270,9 +279,11 @@ export async function checkOut(params: CheckOutParams): Promise<AttendanceDTO> {
     ]);
   }
 
+  let finalLocationName = params.locationNameOverride || null;
+
   // Validate GPS if office locations are provided
   if (officeLocations && officeLocations.length > 0) {
-    validateGPS(
+    finalLocationName = validateGPS(
       data.latitude,
       data.longitude,
       officeLocations
@@ -303,6 +314,7 @@ export async function checkOut(params: CheckOutParams): Promise<AttendanceDTO> {
     data: {
       checkOutTime,
       checkOutPhoto: photoPath,
+      checkOutLocationName: finalLocationName,
       checkOutLatitude: data.latitude,
       checkOutLongitude: data.longitude,
       notes: data.notes || existing.notes,

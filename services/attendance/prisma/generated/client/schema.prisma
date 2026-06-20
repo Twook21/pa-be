@@ -1,0 +1,49 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "./generated/client"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["attendance_schema"]
+}
+
+enum AttendanceStatus {
+  present
+  late
+  absent
+  sakit
+  cuti
+  dinas_luar
+
+  @@schema("attendance_schema")
+}
+
+model Attendance {
+  id                   Int              @id @default(autoincrement())
+  userId               Int              @map("user_id")
+  date                 DateTime         @db.Date
+  checkInTime          DateTime?        @map("check_in_time") @db.Time()
+  checkOutTime         DateTime?        @map("check_out_time") @db.Time()
+  checkInPhoto         String?          @map("check_in_photo") @db.VarChar(255)
+  checkOutPhoto        String?          @map("check_out_photo") @db.VarChar(255)
+  checkInLocationName  String?          @map("check_in_location_name") @db.VarChar(255)
+  checkOutLocationName String?          @map("check_out_location_name") @db.VarChar(255)
+  checkInLatitude      Decimal?         @map("check_in_latitude") @db.Decimal(10, 8)
+  checkInLongitude     Decimal?         @map("check_in_longitude") @db.Decimal(11, 8)
+  checkOutLatitude     Decimal?         @map("check_out_latitude") @db.Decimal(10, 8)
+  checkOutLongitude    Decimal?         @map("check_out_longitude") @db.Decimal(11, 8)
+  status               AttendanceStatus @default(absent)
+  notes                String?          @db.Text
+  activityId           Int?             @map("activity_id")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId, date])
+  @@index([date, status])
+  @@map("attendances")
+  @@schema("attendance_schema")
+}

@@ -57,6 +57,7 @@ export async function checkIn(req: Request, res: Response, next: NextFunction): 
     };
 
     let effectiveLocations = officeLocations.map(loc => ({
+      name: loc.name,
       latitude: loc.latitude,
       longitude: loc.longitude,
       radius: loc.radius,
@@ -74,6 +75,7 @@ export async function checkIn(req: Request, res: Response, next: NextFunction): 
       // Activity overrides location if specified
       if (activity.checkInLatitude != null && activity.checkInLongitude != null) {
         effectiveLocations = [{
+          name: `Kegiatan: ${activity.name || 'Unknown'}`,
           latitude: activity.checkInLatitude,
           longitude: activity.checkInLongitude,
           radius: officeLocations[0]?.radius || 50, // Use first office's radius or default to 50
@@ -88,6 +90,7 @@ export async function checkIn(req: Request, res: Response, next: NextFunction): 
       userId,
       data: { latitude, longitude, photo, notes },
       officeLocations: skipGPS ? undefined : effectiveLocations,
+      locationNameOverride: skipGPS ? 'Dinas Luar' : undefined,
       attendanceSettings: effectiveSettings,
       activityId: activity?.id,
     });
@@ -165,6 +168,7 @@ export async function checkOut(req: Request, res: Response, next: NextFunction):
     };
 
     let effectiveLocations = officeLocations.map(loc => ({
+      name: loc.name,
       latitude: loc.latitude,
       longitude: loc.longitude,
       radius: loc.radius,
@@ -182,6 +186,7 @@ export async function checkOut(req: Request, res: Response, next: NextFunction):
       // Activity overrides location if specified
       if (activity.checkOutLatitude != null && activity.checkOutLongitude != null) {
         effectiveLocations = [{
+          name: `Kegiatan: ${activity.name || 'Unknown'}`,
           latitude: activity.checkOutLatitude,
           longitude: activity.checkOutLongitude,
           radius: officeLocations[0]?.radius || 50, // Use first office's radius or default to 50
@@ -196,6 +201,7 @@ export async function checkOut(req: Request, res: Response, next: NextFunction):
       userId,
       data: { latitude, longitude, photo, notes },
       officeLocations: skipGPS ? undefined : effectiveLocations,
+      locationNameOverride: skipGPS ? 'Dinas Luar' : undefined,
       attendanceSettings: effectiveSettings,
     });
 
