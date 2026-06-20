@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import http from 'http';
+import https from 'https';
 import { Request, Response, NextFunction } from 'express';
 import { ROUTE_MAP } from '../config/routes.js';
 import { ServiceUnavailableError } from '@fintap/shared';
@@ -65,7 +66,9 @@ function pipeMultipart(req: Request, res: Response, serviceUrl: string, path: st
       timeout: PROXY_TIMEOUT,
     };
 
-    const proxyReq = http.request(options, (proxyRes) => {
+    const requestModule = url.protocol === 'https:' ? https : http;
+
+    const proxyReq = requestModule.request(options, (proxyRes) => {
       let body = '';
       proxyRes.on('data', (chunk) => { body += chunk; });
       proxyRes.on('end', () => {

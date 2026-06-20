@@ -1,6 +1,6 @@
 import { PrismaClient } from '../db.js';
-import path from 'path';
-import fs from 'fs';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { s3Client } from '@fintap/shared/dist/utils/s3-upload.js';
 import {
   haversineDistance,
   ValidationError,
@@ -13,12 +13,7 @@ import {
 
 const prisma = new PrismaClient();
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
-
-// Ensure upload directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
+// Removed local UPLOAD_DIR initialization
 
 /**
  * Convert a Prisma Attendance record to the shared AttendanceDTO format.
@@ -55,21 +50,31 @@ function formatTime(time: Date | string): string {
 }
 
 /**
- * Save a base64-encoded photo to the UPLOAD_DIR.
- * Returns the relative file path.
+ * Upload a base64-encoded photo to Supabase S3.
+ * Returns the S3 file URL.
  */
-function savePhoto(base64Data: string, userId: number, type: 'checkin' | 'checkout'): string {
-  // Remove data URL prefix if present (e.g., "data:image/png;base64,")
+async function savePhoto(base64Data: string, userId: number, type: 'checkin' | 'checkout'): Promise<string> {
   const base64Clean = base64Data.replace(/^data:image\/\w+;base64,/, '');
   const buffer = Buffer.from(base64Clean, 'base64');
 
   const timestamp = Date.now();
-  const filename = `${userId}_${type}_${timestamp}.jpg`;
-  const filePath = path.join(UPLOAD_DIR, filename);
+  const filename = `attendance-${userId}-${type}-${timestamp}.jpg`;
+  const bucketName = process.env.S3_BUCKET || 'uploads';
+  const endpoint = process.env.S3_ENDPOINT || 'https://fgvvhouhncseurbipbbt.storage.supabase.co/storage/v1/s3';
 
-  fs.writeFileSync(filePath, buffer);
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: filename,
+    Body: buffer,
+    ContentType: 'image/jpeg',
+  });
 
-  return filename;
+  await s3Client.send(command);
+
+  // Construct the public URL (Supabase S3 typical format or standard S3 format)
+  // Vercel apps typically need the full URL to serve it to the frontend.
+  // Note: If using forcePathStyle, the bucket is in the path.
+  return `${endpoint}/${bucketName}/${filename}`;
 }
 
 /**
@@ -184,8 +189,8 @@ export async function checkIn(params: CheckInParams): Promise<AttendanceDTO> {
     status = determineStatus(now, attendanceSettings.checkInEnd);
   }
 
-  // Save photo to filesystem
-  const photoPath = savePhoto(data.photo, userId, 'checkin');
+  // Save photo to S3
+  const photoPath = await savePhoto(data.photo, userId, 'checkin');
 
   // Create or update attendance record
   const checkInTime = new Date(`1970-01-01T${now.toTimeString().split(' ')[0]}`);
@@ -280,8 +285,8 @@ export async function checkOut(params: CheckOutParams): Promise<AttendanceDTO> {
     }
   }
 
-  // Save photo to filesystem
-  const photoPath = savePhoto(data.photo, userId, 'checkout');
+  // Save photo to S3
+  const photoPath = await savePhoto(data.photo, userId, 'checkout');
 
   const checkOutTime = new Date(`1970-01-01T${now.toTimeString().split(' ')[0]}`);
 
