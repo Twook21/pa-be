@@ -2,12 +2,11 @@ import multer from 'multer';
 import { createS3Uploader } from '@fintap/shared';
 
 const UPLOAD_BUCKET = process.env.S3_BUCKET || 'uploads';
-const baseUpload = createS3Uploader(UPLOAD_BUCKET, 'request', 5 * 1024 * 1024); // 5MB limit
-
-export const upload = multer({
-  storage: baseUpload.storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (_req, file, cb) => {
+export const upload = createS3Uploader(
+  UPLOAD_BUCKET, 
+  'request', 
+  5 * 1024 * 1024,
+  (_req, file, cb) => {
     // Allow images and documents
     const allowedMimeTypes = [
       'image/jpeg',
@@ -27,5 +26,5 @@ export const upload = multer({
     } else {
       cb(new Error('Only images and document files are allowed'));
     }
-  },
-});
+  }
+);

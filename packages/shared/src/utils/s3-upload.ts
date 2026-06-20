@@ -24,7 +24,8 @@ export const s3Client = new S3Client({
 export const createS3Uploader = (
   bucketName: string, 
   prefix: string, 
-  maxFileSize: number = 5 * 1024 * 1024 // Default 5MB
+  maxFileSize: number = 5 * 1024 * 1024, // Default 5MB
+  customFileFilter?: multer.Options['fileFilter']
 ) => {
   return multer({
     storage: multerS3({
@@ -39,10 +40,8 @@ export const createS3Uploader = (
       }
     }),
     limits: { fileSize: maxFileSize },
-    fileFilter: (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-      // By default, only allow images and standard documents. 
-      // Individual routes can override fileFilter or use standard multer mechanisms if needed.
+    fileFilter: customFileFilter || ((_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
       cb(null, true); 
-    },
+    }),
   });
 };
