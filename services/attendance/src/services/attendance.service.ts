@@ -279,13 +279,14 @@ export async function checkOut(params: CheckOutParams): Promise<AttendanceDTO> {
     );
   }
 
-  // Validate time window for check-out
-  if (attendanceSettings) {
-    const [startHour, startMinute] = attendanceSettings.checkOutStart.split(':').map(Number);
-    const startMinutes = startHour * 60 + startMinute;
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    // Validate time window for check-out
+    if (attendanceSettings) {
+      const [startHour, startMinute] = attendanceSettings.checkOutStart.split(':').map(Number);
+      const startMinutes = startHour * 60 + startMinute;
+      const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+      const currentMinutes = wibTime.getUTCHours() * 60 + wibTime.getUTCMinutes();
 
-    if (currentMinutes < startMinutes) {
+      if (currentMinutes < startMinutes) {
       throw new ValidationError('Check-out not yet open', [
         { field: 'time', message: `Check-out opens at ${attendanceSettings.checkOutStart}` },
       ]);
