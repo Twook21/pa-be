@@ -1,9 +1,12 @@
 import { Router } from 'express';
 import * as authController from '../controllers/auth.controller.js';
 import { internalAuth } from '../middleware/internal-auth.js';
-import { upload } from '@fintap/shared';
+import { createS3Uploader } from '@fintap/shared/dist/utils/s3-upload.js';
 
 const router = Router();
+
+const UPLOAD_BUCKET = process.env.S3_BUCKET || 'uploads';
+const upload = createS3Uploader(UPLOAD_BUCKET, 'user', 5 * 1024 * 1024);
 
 // Public routes (gateway skips JWT for these)
 router.post('/register', authController.register);
