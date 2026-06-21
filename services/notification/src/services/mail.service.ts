@@ -293,12 +293,10 @@ export class MailService {
     if (type === 'activity.created') return '<p>Ada kegiatan baru yang telah dijadwalkan hari ini. Silakan buka aplikasi FinTap untuk melihat detail kegiatan dan waktu pelaksanaannya.</p>';
     if (type === 'holiday.tomorrow') return `<p>Sekadar mengingatkan, besok adalah hari libur: <strong>${data.holiday_name || 'Hari Libur'}</strong>. Selamat beristirahat dan sampai jumpa kembali!</p>`;
     if (type === 'password.reset') return `<p>Permintaan reset password telah kami terima. Link ini berlaku selama <strong>1 jam</strong> ke depan.</p>
-<div style="text-align: center; margin: 32px 0;">
-  <a href="${process.env.FRONTEND_URL || 'https://pa-fe.vercel.app'}/reset-password?token=${data.resetToken}&email=${data.email}" class="button">Reset Password Sekarang</a>
-</div>
-<p style="font-size: 14px; color: #64748b;">Jika tombol di atas tidak berfungsi, salin dan tempel link berikut ke browser Anda:</p>
-<a href="${process.env.FRONTEND_URL || 'https://pa-fe.vercel.app'}/reset-password?token=${data.resetToken}&email=${data.email}" class="muted-link">${process.env.FRONTEND_URL || 'https://pa-fe.vercel.app'}/reset-password?token=${data.resetToken}&email=${data.email}</a>
-<p style="margin-top: 24px; font-size: 14px; color: #64748b;">Jika Anda tidak merasa meminta reset password, mohon abaikan email ini. Akun Anda tetap aman.</p>`;
+  <a href="${process.env.FRONTEND_URL || 'https://fintap-v2.perwakilanyplppgrijawabarat.com'}/reset-password?token=${data.resetToken}&email=${data.email}" class="button">Reset Password Sekarang</a>
+  <p style="margin-top: 16px; font-size: 14px; color: #64748b;">Atau salin dan tempel tautan berikut di browser Anda:</p>
+  <a href="${process.env.FRONTEND_URL || 'https://fintap-v2.perwakilanyplppgrijawabarat.com'}/reset-password?token=${data.resetToken}&email=${data.email}" class="muted-link">${process.env.FRONTEND_URL || 'https://fintap-v2.perwakilanyplppgrijawabarat.com'}/reset-password?token=${data.resetToken}&email=${data.email}</a>
+  <p style="margin-top: 24px; font-size: 14px; color: #64748b;">Jika Anda tidak merasa meminta reset password, mohon abaikan email ini. Akun Anda tetap aman.</p>`;
 
     return typeof data.message === 'string' ? data.message : 'Anda memiliki notifikasi baru dari FinTap.';
   }

@@ -133,8 +133,16 @@ export class NotificationService {
     // 4) Send FCM push notification (fire and forget, log errors)
     if (fcmToken) {
       try {
-        let title = 'Fintap Notification';
-        let body = 'You have a new notification';
+        let title = 'Fintap';
+        let body = 'Anda memiliki notifikasi baru.';
+
+        if (type.includes('leave_request')) title = 'Pengajuan Izin/Cuti';
+        if (type.includes('external_duty')) title = 'Pengajuan Dinas Luar';
+        if (type.includes('activity')) title = 'Info Kegiatan';
+        if (type.includes('attendance.late')) {
+          title = 'Peringatan Absensi';
+          body = 'Anda tercatat terlambat hari ini.';
+        }
         
         // Extract title and body from data if available
         if (data && typeof data === 'object') {
