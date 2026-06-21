@@ -232,8 +232,9 @@ export class MailService {
       } catch { return dateStr; }
     };
 
-    const startDate = formatDate(data.start_date as string);
-    const endDate = formatDate(data.end_date as string);
+    const startDate = formatDate((data.start_date || data.date) as string);
+    const endDate = formatDate((data.end_date || data.date) as string);
+    const extLocation = data.location || data.destination || 'lokasi';
 
     if (type === 'attendance.late') return 'Anda tercatat terlambat hari ini. Mohon untuk hadir tepat waktu agar performa tetap maksimal.';
     
@@ -241,9 +242,9 @@ export class MailService {
     if (type === 'leave_request.approved') return `<p>Kabar baik! Pengajuan <strong>${data.type || 'izin/cuti'}</strong> Anda untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> telah <strong style="color: #16a34a;">DISETUJUI</strong> oleh atasan.</p><p>Sistem telah mencatat izin Anda. Selamat menikmati waktu Anda!</p>`;
     if (type === 'leave_request.rejected') return `<p>Mohon maaf, pengajuan <strong>${data.type || 'izin/cuti'}</strong> Anda untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> <strong style="color: #dc2626;">DITOLAK</strong> oleh atasan. Silakan koordinasi lebih lanjut jika diperlukan.</p>`;
 
-    if (type === 'external_duty.created') return `<p>Ada pengajuan dinas luar baru ke <strong>${data.destination || 'lokasi'}</strong> dari staf yang memerlukan persetujuan Anda.</p><ul><li><strong>Tujuan:</strong> ${data.destination || 'Tidak dirinci'}</li><li><strong>Tanggal:</strong> ${startDate} s/d ${endDate}</li></ul>`;
-    if (type === 'external_duty.approved') return `<p>Kabar baik! Pengajuan dinas luar Anda ke <strong>${data.destination || 'lokasi'}</strong> untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> telah <strong style="color: #16a34a;">DISETUJUI</strong>.</p><p>Selamat bertugas dan tetap jaga keselamatan di jalan!</p>`;
-    if (type === 'external_duty.rejected') return `<p>Mohon maaf, pengajuan dinas luar Anda ke <strong>${data.destination || 'lokasi'}</strong> untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> <strong style="color: #dc2626;">DITOLAK</strong>.</p>`;
+    if (type === 'external_duty.created') return `<p>Ada pengajuan dinas luar baru ke <strong>${extLocation}</strong> dari staf yang memerlukan persetujuan Anda.</p><ul><li><strong>Tujuan:</strong> ${extLocation}</li><li><strong>Tanggal:</strong> ${startDate}</li></ul>`;
+    if (type === 'external_duty.approved') return `<p>Kabar baik! Pengajuan dinas luar Anda ke <strong>${extLocation}</strong> untuk tanggal <strong>${startDate}</strong> telah <strong style="color: #16a34a;">DISETUJUI</strong>.</p><p>Selamat bertugas dan tetap jaga keselamatan di jalan!</p>`;
+    if (type === 'external_duty.rejected') return `<p>Mohon maaf, pengajuan dinas luar Anda ke <strong>${extLocation}</strong> untuk tanggal <strong>${startDate}</strong> <strong style="color: #dc2626;">DITOLAK</strong>.</p>`;
 
     if (type === 'activity.created') return '<p>Ada kegiatan baru yang telah dijadwalkan hari ini. Silakan buka aplikasi FinTap untuk melihat detail kegiatan dan waktu pelaksanaannya.</p>';
     if (type === 'holiday.tomorrow') return `<p>Sekadar mengingatkan, besok adalah hari libur: <strong>${data.holiday_name || 'Hari Libur'}</strong>. Selamat beristirahat dan sampai jumpa kembali!</p>`;

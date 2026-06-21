@@ -85,10 +85,10 @@ export class LeaveRequestService {
     }
 
     // Validate type
-    const validTypes = ['cuti', 'sakit'];
+    const validTypes = ['cuti', 'sakit', 'izin'];
     if (!validTypes.includes(data.type)) {
       throw new ValidationError('Invalid leave request type', [
-        { field: 'type', message: 'Type must be "cuti" or "sakit"' },
+        { field: 'type', message: 'Type must be "cuti", "sakit", or "izin"' },
       ]);
     }
 
