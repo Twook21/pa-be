@@ -1,6 +1,6 @@
 {
   "name": "fintap-microservices",
-  "version": "0.1.9",
+  "version": "0.1.2",
   "private": true,
   "description": "FinTap YPLP Backend - Microservices Architecture",
   "workspaces": [
