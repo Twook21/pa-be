@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     # Hanya berjalan jika pesan commit mengandung teks spesifik
-    if: ${{ contains(github.event.head_commit.message, ':rocket: CI Deploy: Update Version') }}
+    if: "contains(github.event.head_commit.message, ':rocket: CI Deploy: Update Version')"
     
     steps:
       - name: Execute Deployment Script via SSH
