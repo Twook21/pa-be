@@ -4,7 +4,8 @@ import { extractUser, requireAdmin } from '../middleware/internal-auth.js';
 import { createS3Uploader } from '@fintap/shared';
 
 const router = Router();
-const upload = createS3Uploader('activities', 'activity');
+const UPLOAD_BUCKET = process.env.S3_BUCKET || 'uploads';
+const upload = createS3Uploader(UPLOAD_BUCKET, 'activity');
 
 // Apply user extraction middleware to all routes
 router.use(extractUser);
