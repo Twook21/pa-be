@@ -28,7 +28,13 @@ export class ActivityController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const requestId = req.headers['x-request-id'] as string | undefined;
-      const activity = await activityService.create(req.body, requestId);
+      const data = { ...req.body };
+      
+      if (req.file) {
+        data.photo = (req.file as any).location;
+      }
+
+      const activity = await activityService.create(data, requestId);
 
       res.status(201).json(formatSuccess('Activity created successfully', activity));
     } catch (error) {
@@ -73,7 +79,12 @@ export class ActivityController {
         return;
       }
 
-      const activity = await activityService.update(id, req.body);
+      const data = { ...req.body };
+      if (req.file) {
+        data.photo = (req.file as any).location;
+      }
+
+      const activity = await activityService.update(id, data);
       res.status(200).json(formatSuccess('Activity updated successfully', activity));
     } catch (error) {
       next(error);

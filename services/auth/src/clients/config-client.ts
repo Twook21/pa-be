@@ -30,6 +30,25 @@ export class ConfigClient {
       return { is_holiday: false, holiday_name: null };
     }
   }
+
+  /**
+   * Get all holidays for a month.
+   * GET /internal/calendars/holidays?month=YYYY-MM
+   */
+  async getHolidays(month: string, requestId?: string): Promise<any[]> {
+    try {
+      const response = await this.http.get('/internal/calendars/holidays', {
+        params: { month },
+        headers: { 'x-request-id': requestId || '' },
+      });
+      return response.data?.data || [];
+    } catch (error: any) {
+      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        throw new ServiceUnavailableError('Config service unavailable', 'SERVICE_UNAVAILABLE');
+      }
+      return [];
+    }
+  }
 }
 
 export const configClient = new ConfigClient();

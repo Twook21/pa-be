@@ -90,29 +90,12 @@ export async function getAttendanceReport(month: string, requestId?: string, opt
     }
   }
 
-  // Check holidays via config service — batch check only weekdays
-  const weekdayDates: string[] = [];
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${yearStr}-${monthStr}-${String(day).padStart(2, '0')}`;
-    if (!weekends.has(dateStr)) {
-      weekdayDates.push(dateStr);
-    }
-  }
-
-  // Check holidays in parallel (batch of 5 to avoid overloading)
+  // Check holidays in one request
   try {
-    const batchSize = 5;
-    for (let i = 0; i < weekdayDates.length; i += batchSize) {
-      const batch = weekdayDates.slice(i, i + batchSize);
-      const results = await Promise.all(
-        batch.map(dateStr => configClient.checkHoliday(dateStr, requestId))
-      );
-      results.forEach((check, idx) => {
-        if (check.is_holiday) {
-          holidays.add(batch[idx]);
-        }
-      });
-    }
+    const holidaysList = await configClient.getHolidays(month, requestId);
+    holidaysList.forEach((holiday: any) => {
+      holidays.add(holiday.date);
+    });
   } catch {
     // If config service is down, we'll only have weekend info
   }

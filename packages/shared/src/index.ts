@@ -20,6 +20,7 @@ export * from './errors/service-unavailable-error.js';
 export * from './utils/response-formatter.js';
 export * from './utils/haversine.js';
 export { createLogger } from './utils/logger-factory.js';
+export * from './utils/s3-upload.js';
 
 // Constants
 export * from './constants/index.js';

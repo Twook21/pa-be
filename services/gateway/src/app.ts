@@ -12,6 +12,9 @@ import { swaggerRouter } from './config/swagger.js';
 
 const app = express();
 
+// Enable trust proxy so rate limiters and real IP headers work correctly on Vercel / Reverse Proxies
+app.set('trust proxy', 1);
+
 // Attach request ID to every request
 app.use((req, _res, next) => {
   req.headers['x-request-id'] = req.headers['x-request-id'] || uuidv4();

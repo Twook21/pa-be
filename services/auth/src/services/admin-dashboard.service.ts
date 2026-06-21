@@ -53,7 +53,14 @@ export async function getDashboard(filters: DashboardFilters, requestId?: string
     ];
   }
 
-  const [allActiveUsers, totalEmployees, divisions] = await Promise.all([
+  const [
+    allActiveUsers,
+    totalEmployees,
+    divisions,
+    holidayCheck,
+    activities,
+    attendanceRecords,
+  ] = await Promise.all([
     prisma.user.findMany({
       where: userWhere,
       select: { id: true, name: true, email: true, division: true, photo: true },
@@ -65,16 +72,10 @@ export async function getDashboard(filters: DashboardFilters, requestId?: string
       select: { division: true },
       distinct: ['division'],
     }),
+    configClient.checkHoliday(date, requestId),
+    activityClient.getByDate(date, requestId),
+    attendanceClient.getByDate(date, requestId),
   ]);
-
-  // 2. Check if the date is a holiday
-  const holidayCheck = await configClient.checkHoliday(date, requestId);
-
-  // 3. Get activities for the date
-  const activities = await activityClient.getByDate(date, requestId);
-
-  // 4. Get attendance records for the date
-  const attendanceRecords = await attendanceClient.getByDate(date, requestId);
 
   // 5. Create a map of userId → attendance record
   const attendanceMap = new Map<number, any>();
