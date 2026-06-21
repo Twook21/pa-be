@@ -129,6 +129,31 @@ export class LeaveRequestController {
       next(error);
     }
   }
+
+  /**
+   * DELETE /leave-requests/:id - Delete a leave request.
+   */
+  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        res.status(400).json({
+          status: 'error',
+          message: 'Invalid leave request ID',
+          code: 'VALIDATION_ERROR',
+        });
+        return;
+      }
+
+      const userId = (req as any).userId;
+      const userRole = (req as any).userRole || 'user';
+
+      await leaveRequestService.delete(id, userId, userRole);
+      res.status(200).json(formatSuccess('Leave request deleted successfully', null));
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const leaveRequestController = new LeaveRequestController();

@@ -18,6 +18,7 @@ router.post('/reset-password', authController.resetPassword);
 router.post('/logout', internalAuth, authController.logout);
 router.get('/me', internalAuth, authController.getMe);
 router.post('/profile', internalAuth, upload.single('photo'), authController.updateProfile);
+router.post('/fcm-token', internalAuth, authController.updateFcmToken);
 
 // Biometric endpoints (protected, mapped via gateway)
 router.get('/biometric', internalAuth, authController.getBiometricStatus);

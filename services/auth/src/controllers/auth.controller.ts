@@ -133,3 +133,20 @@ export async function deleteBiometric(req: Request, res: Response, next: NextFun
     next(error);
   }
 }
+
+export async function updateFcmToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { userId } = extractUser(req);
+    const { fcm_token } = req.body;
+
+    if (!fcm_token) {
+      res.status(400).json({ status: 'error', message: 'fcm_token is required', code: 'VALIDATION_ERROR' });
+      return;
+    }
+
+    await userService.updateUser(userId, { fcmToken: fcm_token });
+    res.status(200).json(formatSuccess('FCM token updated successfully'));
+  } catch (error) {
+    next(error);
+  }
+}

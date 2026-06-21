@@ -282,6 +282,24 @@ export class ExternalDutyService {
   }
 
   /**
+   * Delete an external duty request.
+   * Can only be deleted by the user who created it, or an admin.
+   */
+  async delete(id: number, userId: number, userRole: string) {
+    const duty = await prisma.externalDuty.findUnique({ where: { id } });
+
+    if (!duty) {
+      throw new NotFoundError('External duty not found');
+    }
+
+    if (userRole !== 'admin' && duty.userId !== userId) {
+      throw new NotFoundError('External duty not found');
+    }
+
+    await prisma.externalDuty.delete({ where: { id } });
+  }
+
+  /**
    * Get approved external duty for a specific user on a specific date.
    * Used by Attendance Service to check if user has external duty.
    */

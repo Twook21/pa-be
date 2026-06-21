@@ -254,6 +254,24 @@ export class LeaveRequestService {
   }
 
   /**
+   * Delete a leave request.
+   * Can only be deleted by the user who created it, or an admin.
+   */
+  async delete(id: number, userId: number, userRole: string) {
+    const request = await prisma.leaveRequest.findUnique({ where: { id } });
+
+    if (!request) {
+      throw new NotFoundError('Leave request not found');
+    }
+
+    if (userRole !== 'admin' && request.userId !== userId) {
+      throw new NotFoundError('Leave request not found');
+    }
+
+    await prisma.leaveRequest.delete({ where: { id } });
+  }
+
+  /**
    * Create attendance records for each working day in a date range.
    * Skips weekends and holidays.
    */

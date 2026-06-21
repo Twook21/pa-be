@@ -26,4 +26,7 @@ router.put('/:id/reject', requireAdmin, (req, res, next) => externalDutyControll
 // POST /:id/process - Process (approve/reject) an external duty (admin only)
 router.post('/:id/process', requireAdmin, (req, res, next) => externalDutyController.process(req, res, next));
 
+// DELETE /:id - Delete an external duty
+router.delete('/:id', (req, res, next) => externalDutyController.delete(req, res, next));
+
 export default router;

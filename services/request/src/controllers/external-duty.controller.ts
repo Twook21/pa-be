@@ -200,6 +200,31 @@ export class ExternalDutyController {
       next(error);
     }
   }
+
+  /**
+   * DELETE /external-duties/:id - Delete an external duty.
+   */
+  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        res.status(400).json({
+          status: 'error',
+          message: 'Invalid external duty ID',
+          code: 'VALIDATION_ERROR',
+        });
+        return;
+      }
+
+      const userId = (req as any).userId;
+      const userRole = (req as any).userRole || 'user';
+
+      await externalDutyService.delete(id, userId, userRole);
+      res.status(200).json(formatSuccess('External duty deleted successfully', null));
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const externalDutyController = new ExternalDutyController();

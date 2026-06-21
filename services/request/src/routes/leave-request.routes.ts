@@ -23,4 +23,7 @@ router.put('/:id/approve', requireAdmin, (req, res, next) => leaveRequestControl
 // PUT /:id/reject - Reject a leave request (admin only)
 router.put('/:id/reject', requireAdmin, (req, res, next) => leaveRequestController.reject(req, res, next));
 
+// DELETE /:id - Delete a leave request
+router.delete('/:id', (req, res, next) => leaveRequestController.delete(req, res, next));
+
 export default router;
