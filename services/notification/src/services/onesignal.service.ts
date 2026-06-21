@@ -44,7 +44,7 @@ export class OneSignalService {
     try {
       const payload = {
         app_id: this.appId,
-        include_subscription_ids: [subscriptionId],
+        include_player_ids: [subscriptionId],
         headings: { en: type },
         contents: { en: data.message ? String(data.message) : 'You have a new notification' },
         data: data

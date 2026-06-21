@@ -63,8 +63,8 @@ export class MailService {
       .replace('activity_created', 'activity.created')
       .replace('password_reset', 'password.reset');
 
-    const envFrom = process.env.SMTP_FROM || process.env.MAIL_FROM_ADDRESS;
-    let from = envFrom || 'noreply@fintap-yplp.perwakilanyplppgrijawabarat.com';
+    const envFrom = process.env.MAIL_FROM_ADDRESS || process.env.SMTP_FROM;
+    let from = envFrom || 'hello@fintap-yplp.perwakilanyplppgrijawabarat.com';
 
     // If SMTP_FROM doesn't contain a formatted name (e.g. "Name <email>"), format it
     if (!from.includes('<')) {
