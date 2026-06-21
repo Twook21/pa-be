@@ -16,7 +16,4 @@ router.put('/read-all', (req, res, next) => notificationController.markAllAsRead
 // PUT /notifications/:id/read - Mark a single notification as read
 router.put('/:id/read', (req, res, next) => notificationController.markAsRead(req, res, next));
 
-// POST /notifications/fcm-token - Store FCM token
-router.post('/fcm-token', (req, res, next) => notificationController.storeFcmToken(req, res, next));
-
 export default router;
