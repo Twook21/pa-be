@@ -3,7 +3,7 @@ import { NotFoundError, createLogger } from '@fintap/shared';
 import type { SendNotificationDTO } from '@fintap/shared';
 import { authClient } from '../clients/auth-client.js';
 import { mailService } from './mail.service.js';
-import { onesignalService } from './onesignal.service.js';
+import { fcmService } from './fcm.service.js';
 
 const prisma = new PrismaClient();
 const logger = createLogger('notification-service');
@@ -130,12 +130,22 @@ export class NotificationService {
       }
     }
 
-    // 4) Send OneSignal push notification (fire and forget, log errors)
+    // 4) Send FCM push notification (fire and forget, log errors)
     if (fcmToken) {
       try {
-        await onesignalService.sendPushNotification(fcmToken, type, data);
+        let title = 'Fintap Notification';
+        let body = 'You have a new notification';
+        
+        // Extract title and body from data if available
+        if (data && typeof data === 'object') {
+          if ('title' in data) title = String(data.title);
+          if ('message' in data) body = String(data.message);
+          else if ('body' in data) body = String(data.body);
+        }
+
+        await fcmService.sendPushNotification([fcmToken], title, body, data as Record<string, string>);
       } catch (err) {
-        logger.error('Failed to send OneSignal notification', {
+        logger.error('Failed to send FCM notification', {
           error: err instanceof Error ? err.message : String(err),
         });
       }

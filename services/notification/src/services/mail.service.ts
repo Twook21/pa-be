@@ -207,7 +207,7 @@ export class MailService {
                 <h1>Fin<span>tap</span></h1>
               </div>
               <div class="content">
-                ${message || this.getDefaultMessage(type, data)}
+                ${this.getDefaultMessage(type, data)}
                 ${data.details ? `<div class="details-box"><strong>Catatan / Detail:</strong><br>${data.details}</div>` : ''}
               </div>
               <div class="footer">
@@ -224,26 +224,38 @@ export class MailService {
   /**
    * Get default message based on type.
    */
-  private getDefaultMessage(type: string, data: Record<string, unknown>): string {
-    const messages: Record<string, string> = {
-      'attendance.late': 'Anda tercatat terlambat hari ini. Mohon untuk hadir tepat waktu.',
-      'leave_request.created': 'Ada pengajuan izin/cuti baru yang memerlukan persetujuan Anda.',
-      'leave_request.approved': 'Pengajuan izin/cuti Anda telah disetujui.',
-      'leave_request.rejected': 'Pengajuan izin/cuti Anda ditolak.',
-      'external_duty.created': 'Ada pengajuan dinas luar baru yang memerlukan persetujuan Anda.',
-      'external_duty.approved': 'Pengajuan dinas luar Anda telah disetujui.',
-      'external_duty.rejected': 'Pengajuan dinas luar Anda ditolak.',
-      'activity.created': 'Ada kegiatan baru yang telah dijadwalkan. Silakan cek detail di aplikasi.',
-      'holiday.tomorrow': `Besok adalah hari libur: <strong>${data.holiday_name || 'Hari Libur'}</strong>. Selamat beristirahat!`,
-      'password.reset': `<p>Permintaan reset password telah kami terima. Link ini berlaku selama <strong>1 jam</strong> ke depan.</p>
+  private getDefaultMessage(type: string, data: Record<string, any>): string {
+    const formatDate = (dateStr: string) => {
+      if (!dateStr) return '';
+      try {
+        return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      } catch { return dateStr; }
+    };
+
+    const startDate = formatDate(data.start_date as string);
+    const endDate = formatDate(data.end_date as string);
+
+    if (type === 'attendance.late') return 'Anda tercatat terlambat hari ini. Mohon untuk hadir tepat waktu agar performa tetap maksimal.';
+    
+    if (type === 'leave_request.created') return `<p>Ada pengajuan <strong>${data.type || 'izin/cuti'}</strong> baru dari staf yang memerlukan persetujuan Anda segera.</p><ul><li><strong>Mulai:</strong> ${startDate}</li><li><strong>Sampai:</strong> ${endDate}</li></ul>`;
+    if (type === 'leave_request.approved') return `<p>Kabar baik! Pengajuan <strong>${data.type || 'izin/cuti'}</strong> Anda untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> telah <strong style="color: #16a34a;">DISETUJUI</strong> oleh atasan.</p><p>Sistem telah mencatat izin Anda. Selamat menikmati waktu Anda!</p>`;
+    if (type === 'leave_request.rejected') return `<p>Mohon maaf, pengajuan <strong>${data.type || 'izin/cuti'}</strong> Anda untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> <strong style="color: #dc2626;">DITOLAK</strong> oleh atasan. Silakan koordinasi lebih lanjut jika diperlukan.</p>`;
+
+    if (type === 'external_duty.created') return `<p>Ada pengajuan dinas luar baru ke <strong>${data.destination || 'lokasi'}</strong> dari staf yang memerlukan persetujuan Anda.</p><ul><li><strong>Tujuan:</strong> ${data.destination || 'Tidak dirinci'}</li><li><strong>Tanggal:</strong> ${startDate} s/d ${endDate}</li></ul>`;
+    if (type === 'external_duty.approved') return `<p>Kabar baik! Pengajuan dinas luar Anda ke <strong>${data.destination || 'lokasi'}</strong> untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> telah <strong style="color: #16a34a;">DISETUJUI</strong>.</p><p>Selamat bertugas dan tetap jaga keselamatan di jalan!</p>`;
+    if (type === 'external_duty.rejected') return `<p>Mohon maaf, pengajuan dinas luar Anda ke <strong>${data.destination || 'lokasi'}</strong> untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> <strong style="color: #dc2626;">DITOLAK</strong>.</p>`;
+
+    if (type === 'activity.created') return '<p>Ada kegiatan baru yang telah dijadwalkan hari ini. Silakan buka aplikasi FinTap untuk melihat detail kegiatan dan waktu pelaksanaannya.</p>';
+    if (type === 'holiday.tomorrow') return `<p>Sekadar mengingatkan, besok adalah hari libur: <strong>${data.holiday_name || 'Hari Libur'}</strong>. Selamat beristirahat dan sampai jumpa kembali!</p>`;
+    if (type === 'password.reset') return `<p>Permintaan reset password telah kami terima. Link ini berlaku selama <strong>1 jam</strong> ke depan.</p>
 <div style="text-align: center; margin: 32px 0;">
   <a href="${process.env.FRONTEND_URL || 'https://pa-fe.vercel.app'}/reset-password?token=${data.resetToken}&email=${data.email}" class="button">Reset Password Sekarang</a>
 </div>
 <p style="font-size: 14px; color: #64748b;">Jika tombol di atas tidak berfungsi, salin dan tempel link berikut ke browser Anda:</p>
 <a href="${process.env.FRONTEND_URL || 'https://pa-fe.vercel.app'}/reset-password?token=${data.resetToken}&email=${data.email}" class="muted-link">${process.env.FRONTEND_URL || 'https://pa-fe.vercel.app'}/reset-password?token=${data.resetToken}&email=${data.email}</a>
-<p style="margin-top: 24px; font-size: 14px; color: #64748b;">Jika Anda tidak merasa meminta reset password, mohon abaikan email ini. Akun Anda tetap aman.</p>`,
-    };
-    return messages[type] || 'Anda memiliki notifikasi baru dari FinTap.';
+<p style="margin-top: 24px; font-size: 14px; color: #64748b;">Jika Anda tidak merasa meminta reset password, mohon abaikan email ini. Akun Anda tetap aman.</p>`;
+
+    return typeof data.message === 'string' ? data.message : 'Anda memiliki notifikasi baru dari FinTap.';
   }
 }
 
