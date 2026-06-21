@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     # Hanya berjalan jika pesan commit mengandung teks spesifik
-    if: contains(github.event.head_commit.message, ':rocket: CI Deploy: Update Version')
+    if: ${{ contains(github.event.head_commit.message, ':rocket: CI Deploy: Update Version') }}
     
     steps:
       - name: Execute Deployment Script via SSH
@@ -18,8 +18,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          # Port opsional, default 22 jika tidak diatur
-          port: ${{ secrets.VPS_PORT || '22' }}
+          port: 22
           script: |
             echo "Starting Deployment Process..."
             cd /home/bintang/pa-be
