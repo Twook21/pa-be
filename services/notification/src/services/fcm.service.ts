@@ -18,16 +18,16 @@ class FCMService {
 
   private init() {
     try {
-      const serviceAccountPath = path.resolve(__dirname, '../../config/firebase-service-account.json');
-      if (fs.existsSync(serviceAccountPath)) {
-        const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      const serviceAccountStr = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+      if (serviceAccountStr) {
+        const serviceAccount = JSON.parse(serviceAccountStr);
         admin.initializeApp({
           credential: admin.credential.cert(serviceAccount)
         });
         this.isInitialized = true;
         logger.info('Firebase Admin SDK initialized successfully');
       } else {
-        logger.warn('Firebase Service Account JSON not found at config/firebase-service-account.json');
+        logger.warn('FIREBASE_SERVICE_ACCOUNT_JSON environment variable not found. Push notifications will not work.');
       }
     } catch (error) {
       logger.error('Failed to initialize Firebase Admin SDK', error);
