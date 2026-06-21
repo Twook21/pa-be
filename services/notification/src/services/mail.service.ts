@@ -238,11 +238,55 @@ export class MailService {
 
     if (type === 'attendance.late') return 'Anda tercatat terlambat hari ini. Mohon untuk hadir tepat waktu agar performa tetap maksimal.';
     
-    if (type === 'leave_request.created') return `<p>Ada pengajuan <strong>${data.type || 'izin/cuti'}</strong> baru dari staf yang memerlukan persetujuan Anda segera.</p><ul><li><strong>Mulai:</strong> ${startDate}</li><li><strong>Sampai:</strong> ${endDate}</li></ul>`;
+    if (type === 'leave_request.created') return `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <p>Dengan hormat,</p>
+        <p>Bersama email ini kami informasikan bahwa terdapat pengajuan <strong>${data.type?.toString().toUpperCase() || 'IZIN/CUTI'}</strong> baru yang memerlukan peninjauan dan persetujuan Anda.</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0; background-color: #f8fafc; border-radius: 8px;">
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; width: 140px; color: #64748b; font-weight: bold;">Nama Staf</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #0f172a;"><strong>${data.user_name || 'Karyawan'}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: bold;">Jenis Pengajuan</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #0f172a;">${data.type || 'Izin/Cuti'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: bold;">Tanggal Mulai</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #0f172a;">${startDate}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; color: #64748b; font-weight: bold;">Tanggal Selesai</td>
+            <td style="padding: 12px; color: #0f172a;">${endDate}</td>
+          </tr>
+        </table>
+        <p>Mohon ketersediaan Bapak/Ibu untuk meninjau detail pengajuan ini melalui aplikasi Fintap.</p>
+        <p>Atas perhatian dan kerja samanya, kami ucapkan terima kasih.</p>
+      </div>`;
     if (type === 'leave_request.approved') return `<p>Kabar baik! Pengajuan <strong>${data.type || 'izin/cuti'}</strong> Anda untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> telah <strong style="color: #16a34a;">DISETUJUI</strong> oleh atasan.</p><p>Sistem telah mencatat izin Anda. Selamat menikmati waktu Anda!</p>`;
     if (type === 'leave_request.rejected') return `<p>Mohon maaf, pengajuan <strong>${data.type || 'izin/cuti'}</strong> Anda untuk tanggal <strong>${startDate}</strong> s/d <strong>${endDate}</strong> <strong style="color: #dc2626;">DITOLAK</strong> oleh atasan. Silakan koordinasi lebih lanjut jika diperlukan.</p>`;
 
-    if (type === 'external_duty.created') return `<p>Ada pengajuan dinas luar baru ke <strong>${extLocation}</strong> dari staf yang memerlukan persetujuan Anda.</p><ul><li><strong>Tujuan:</strong> ${extLocation}</li><li><strong>Tanggal:</strong> ${startDate}</li></ul>`;
+    if (type === 'external_duty.created') return `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <p>Dengan hormat,</p>
+        <p>Bersama email ini kami informasikan bahwa terdapat pengajuan <strong>DINAS LUAR</strong> baru yang memerlukan peninjauan dan persetujuan Anda.</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0; background-color: #f8fafc; border-radius: 8px;">
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; width: 140px; color: #64748b; font-weight: bold;">Nama Staf</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #0f172a;"><strong>${data.user_name || 'Karyawan'}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: bold;">Lokasi Tujuan</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #0f172a;">${extLocation}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; color: #64748b; font-weight: bold;">Tanggal Dinas</td>
+            <td style="padding: 12px; color: #0f172a;">${startDate}</td>
+          </tr>
+        </table>
+        <p>Mohon ketersediaan Bapak/Ibu untuk meninjau detail pengajuan ini melalui aplikasi Fintap.</p>
+        <p>Atas perhatian dan kerja samanya, kami ucapkan terima kasih.</p>
+      </div>`;
     if (type === 'external_duty.approved') return `<p>Kabar baik! Pengajuan dinas luar Anda ke <strong>${extLocation}</strong> untuk tanggal <strong>${startDate}</strong> telah <strong style="color: #16a34a;">DISETUJUI</strong>.</p><p>Selamat bertugas dan tetap jaga keselamatan di jalan!</p>`;
     if (type === 'external_duty.rejected') return `<p>Mohon maaf, pengajuan dinas luar Anda ke <strong>${extLocation}</strong> untuk tanggal <strong>${startDate}</strong> <strong style="color: #dc2626;">DITOLAK</strong>.</p>`;
 

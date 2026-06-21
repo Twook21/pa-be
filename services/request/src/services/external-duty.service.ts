@@ -146,6 +146,7 @@ export class ExternalDutyService {
           duty_id: duty.id,
           date: dateStr,
           location: duty.location,
+          user_name: userName,
           message: `Pengajuan dinas luar baru dari ${userName} ke ${duty.location} pada tanggal ${dateStr}`,
         },
         requestId

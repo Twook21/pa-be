@@ -135,6 +135,7 @@ export class LeaveRequestService {
           type: request.type,
           start_date: startDateStr,
           end_date: endDateStr,
+          user_name: userName,
           message: `Pengajuan izin/cuti (${request.type}) baru dari ${userName} untuk tanggal ${startDateStr} s/d ${endDateStr}`,
         },
         requestId
