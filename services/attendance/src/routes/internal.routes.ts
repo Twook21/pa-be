@@ -71,7 +71,10 @@ router.get('/attendances', async (req: Request, res: Response, next: NextFunctio
 
 function formatTime(time: Date | string): string {
   if (time instanceof Date) {
-    return time.toISOString().split('T')[1].split('.')[0];
+    const hh = String(time.getHours()).padStart(2, '0');
+    const mm = String(time.getMinutes()).padStart(2, '0');
+    const ss = String(time.getSeconds()).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
   }
   return String(time);
 }
