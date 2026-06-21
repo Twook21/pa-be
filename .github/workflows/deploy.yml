@@ -8,7 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Hanya berjalan jika pesan commit mengandung teks spesifik
     if: "contains(github.event.head_commit.message, ':rocket: CI Deploy: Update Version')"
     
     steps:
@@ -31,6 +30,17 @@ jobs:
             
             echo "Building packages..."
             npm run build
+            
+            echo "Recreating Prisma symlinks..."
+            if ! grep -q "output" prisma/schema.prisma; then
+              sed -i "s/previewFeatures = \\[\"multiSchema\"\\]/previewFeatures = [\"multiSchema\"]\n  output          = \".\/generated\/client\"/" prisma/schema.prisma
+            fi
+            npx prisma generate
+            
+            for s in auth attendance activity request config notification; do
+              mkdir -p services/$s/prisma/generated
+              ln -sfn "$PWD/prisma/generated/client" "$PWD/services/$s/prisma/generated/client"
+            done
             
             echo "Restarting Systemd services..."
             sudo systemctl restart fintap-gateway fintap-auth fintap-attendance fintap-activity fintap-request fintap-config fintap-notification
