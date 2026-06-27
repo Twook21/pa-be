@@ -91,6 +91,17 @@ export class ExternalDutyService {
       ]);
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateOnly = new Date(date);
+    dateOnly.setHours(0, 0, 0, 0);
+
+    if (dateOnly <= today) {
+      throw new ValidationError('Date must be at least H-1', [
+        { field: 'date', message: 'Pengajuan dinas luar wajib maksimal H-1 (tidak bisa hari H atau hari yang lewat)' },
+      ]);
+    }
+
     // Validate required fields
     if (!data.location || data.location.trim().length === 0) {
       throw new ValidationError('Location is required', [
